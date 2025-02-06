@@ -20,3 +20,9 @@ My goals with this project:
 - Lots of extra code & services due to multiple refactorings
 - Horrible comments (should use https://www.conventionalcommits.org/en/v1.0.0/)
 - Some DNS / CORS issues with the API GW call to my owned domain
+
+## Interesting Reading
+- Free lectures on the basics of AI and LLMs https://www.3blue1brown.com/topics/neural-networks
+- An Illustrated Guide to OAuth & OpenID Connect https://www.youtube.com/watch?v=t18YB3xDfXI 
+- OpenID AWS & Github https://aws.amazon.com/blogs/security/use-iam-roles-to-connect-github-actions-to-actions-in-aws
+- Conventional Commits https://www.conventionalcommits.org/en/v1.0.0/ 
