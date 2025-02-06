@@ -1,0 +1,116 @@
+name: CDKTF Deployment
+
+on:
+  workflow_dispatch:
+
+env:
+  AWS_REGION: eu-central-1
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: testing
+        run: ls -la
+      - name: package fileMover Lambda
+        run: |
+          cd lambdas/fileMover
+          zip -r9 ../../fileMover.zip .
+      - uses: actions/upload-artifact@v4
+        with:
+          name: fileMover
+          path: fileMover.zip
+      - name: package ChatRAG Lambda
+        run: |
+          cd lambdas/chatRAG
+          zip -r9 ../../chatRAG.zip .
+      - uses: actions/upload-artifact@v4
+        with:
+          name: chatRAG
+          path: chatRAG.zip
+      - name: package processingLambda Lambda
+        run: |
+          cd lambdas/processingLambda
+          zip -r9 ../../processingLambda.zip .
+      - uses: actions/upload-artifact@v4
+        with:
+          name: processingLambda
+          path: processingLambda.zip
+      - name: package agentLambda Lambda
+        run: |
+          cd lambdas/agentLambda
+          zip -r9 ../../agentLambda.zip .
+      - uses: actions/upload-artifact@v4
+        with:
+          name: agentLambda
+          path: agentLambda.zip
+  deploy:
+    needs: build
+    permissions:
+      contents: read
+      id-token: write
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./infra
+    steps:
+      - name: Checkout the Source
+        uses: actions/checkout@v4
+      - name: Download fileMover artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: fileMover
+          path: infra/
+      - name: Download chatRAG artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: chatRAG
+          path: infra/
+      - name: Download processingLambda artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: processingLambda
+          path: infra/
+      - name: Download agentLambda artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: agentLambda
+          path: infra/
+      - name: List workdir contents
+        run: |
+          cd /home/runner/work/gudr33dz/gudr33dz
+          ls -R
+      - name: Use Node.js 18.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+      - name: Install CDKTF CLI
+        run: npm install -g cdktf-cli
+      - name: Install Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.10.4
+          cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+      - name: Install dependencies
+        run: npm install
+      - name: Generate bindings for providers and modules
+        run: cdktf get --language typescript
+      #- name: Run Tests
+      #  run: npm test
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ${{ env.AWS_REGION }}
+          audience: sts.amazonaws.com
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          role-session-name: myGitHubActions
+      - name: Deploy
+        run: cdktf deploy --auto-approve
+        env:
+          TERRAFORM_CLOUD_TOKEN: ${{ secrets.TF_API_TOKEN }}
+          AWS_SDK_LOAD_CONFIG: true
+      - name: upload frontend code to S3
+        run: |
+          aws s3 sync /home/runner/work/gudr33dz/gudr33dz/frontend s3://not-a-wise.click --delete 
+      

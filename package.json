@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "@cdktf/provider-aws": "^19.51.0",
+    "cdktf-local-exec": "^0.5.54"
+  }
+}

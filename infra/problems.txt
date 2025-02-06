@@ -1,0 +1,36 @@
+- api gateway creation, dependency issue
+- certificate creation, CNAME creation -> validation
+- need domain cert for root also
+- need cloudfront for https domain
+- cloudfron distribution for domain
+-- To use a certificate in AWS Certificate Manager (ACM) to require HTTPS between viewers and CloudFront, make sure you request (or import) the certificate in the US East (N. Virginia) Region (us-east-1).
+- Cognito Alias for Custom Domain
+- need root for Cloudfront and cert: not-a-wise.click
+- a cognito style is also needed for the page to display
+- enable access token authentication
+- missing invoke Bedrock agent in IAM Role
+- Use Haiku instead .  works with mote than one question...
+
+
+
+
+Due to CDKTF's inability to programmatically retrieve the CloudFront distribution associated with the Cognito User Pool Domain, you must manually create the Route53 alias A record after deploying your stack.
+Retrieve the CloudFront Distribution Domain Name:
+
+    Navigate to the Amazon Cognito console.
+    Select your User Pool.
+    Go to the "Domain name" section.
+    Locate and note the CloudFront distribution domain name associated with auth.not-a-wise.click.
+
+Create the Route53 Alias Record:
+
+    Navigate to the Route53 console.
+    Select the hosted zone for not-a-wise.click.
+    Create a new "A - IPv4 address" record:
+        Name: auth.not-a-wise.click
+        Type: A
+        Alias: Yes
+        Alias Target: Enter the CloudFront distribution domain name obtained earlier.
+        Routing Policy: Simple
+        Evaluate Target Health: No
+    Save the record.
